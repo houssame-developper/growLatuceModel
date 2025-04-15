@@ -1,13 +1,21 @@
+import os
+from pyexpat import model
 import streamlit as st
 import joblib
+import requests
 
-# تحميل الموديل
-@st.cache_resource  # حتى لا يعيد التحميل كل مرة
+@st.cache_resource
 def load_model():
-    model = joblib.load("model.joblib")  # غيّر الاسم حسب اسم الملف
+    model_path = "model.joblib"  # تأكد من أن هذا هو مسار الموديل الخاص بك
+    if not os.path.exists(model_path):
+        url = "https://www.mediafire.com/file/kxu5c7iijyr7eg8/model.joblib"
+        response = requests.get(url)
+        with open(model_path, 'wb') as file:
+            file.write(response.content)
+    # حتى لا يعيد التحميل كل مرة
+    model = joblib.load(model_path)  # غيّر الاسم حسب اسم الملف
     return model
 
-model = load_model()
 
 # اللغات
 languages = {
@@ -287,7 +295,7 @@ with col2:
 if st.button(texts["predict"], key="predict_button"):
     # تجهيز البيانات بصيغة مناسبة للموديل
     features = [[temp, humidity, tds, ph,]]
-    
+    model= load_model()  # تحميل الموديل
     # توقع النتيجة باستخدام الموديل
     prediction = model.predict(features)
 
